@@ -39,9 +39,14 @@ namespace utils
         return 3.14159265358979323846f / 180.0f * degree;
     }
 
-    double length(Point2d a, Point2d b)
+    double length(const Point2d& a, const Point2d& b)
     {
         return std::sqrt((b.x - a.x) * (b.x - a.x) + (b.y - a.y) * (b.y - a.y));
+    }
+    
+    double length(const Point2d& a)
+    {
+        return std::sqrt(a.x * a.x + a.y * a.y);
     }
 
     bool onSegment(Point2d p, Point2d q, Point2d r)

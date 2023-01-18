@@ -30,7 +30,8 @@ namespace utils
     void centerOrigin(sf::Text& text);
 
     double toRadian(double degree);
-    double length(Point2d a, Point2d b);
+    double length(const Point2d& a, const Point2d& b);
+    double length(const Point2d& a);
     bool onSegment(Point2d p, Point2d q, Point2d r);
     int orientation(Point2d p, Point2d q, Point2d r);
     bool doIntersect(Point2d p1, Point2d q1, Point2d p2, Point2d q2);
