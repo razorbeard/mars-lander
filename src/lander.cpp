@@ -21,6 +21,11 @@ Lander::Lander(const Point2d& position, const Point2d& velocity, int fuel, int a
 
 }
 
+Lander::Lander()
+{
+
+}
+
 Lander::~Lander()
 {
 

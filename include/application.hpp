@@ -5,6 +5,7 @@
 #include "resourceIdentifiers.hpp"
 #include "container.hpp"
 #include "levelLoader.hpp"
+#include "simulator.hpp"
 
 #include <SFML/System/Time.hpp>
 
@@ -30,6 +31,7 @@ private:
     FontHolder m_fonts;
     Container m_container;
     LevelLoader m_levelLoader;
+    Simulator m_simulator;
 };
 
 #endif

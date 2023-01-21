@@ -65,6 +65,11 @@ const Gene& Phenotype::gene(std::size_t id) const noexcept
     return m_genes[id];
 }
 
+const std::size_t Phenotype::size() const noexcept
+{
+    return m_genes.size();
+}
+
 const double Phenotype::score() const noexcept
 {
     return m_score;

@@ -27,6 +27,7 @@ public:
     void render(sf::RenderWindow& window);
 
     const Polyline& surfacePoints() noexcept;
+    const LevelData& levelData() noexcept;
 
 private:
     const std::vector<std::string> splitText(const std::string& text);

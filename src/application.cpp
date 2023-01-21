@@ -7,10 +7,7 @@ const sf::Time Application::s_timePerFrame = sf::seconds(1.0f / 60.0f);
 
 Application::Application()
 	: m_window(sf::VideoMode(1000, 428), "Mars Lander", sf::Style::Close)
-	, m_textures()
-	, m_fonts()
 	, m_container(m_window)
-    , m_levelLoader()
 {
 	m_window.setKeyRepeatEnabled(false);
 
@@ -51,6 +48,8 @@ void Application::createButtons()
 	std::shared_ptr<Button> button = std::make_shared<Button>(m_fonts, "Play");
 	auto callback = [this] ()
 	{
+        const LevelData data = m_levelLoader.levelData();
+        m_simulator.run(data.position, data.velocity, data.fuel, data.angle, data.thrust, m_levelLoader.surfacePoints());
 	};
 	button->setSize(sf::Vector2f(70, 30));
 	button->setPressedCallback(callback);
@@ -61,8 +60,9 @@ void Application::createButtons()
 	for (std::size_t id = 1; id < 6; ++id)
 	{
 		std::shared_ptr<Button> button = std::make_shared<Button>(m_fonts, levels[id-1]);
-		auto callback = [id] ()
+		auto callback = [this, id] ()
 		{
+            m_levelLoader.load("resources/data/level_0" + std::to_string(id) + ".txt");
 		};
 
 		button->setSize(sf::Vector2f(70, 30));
@@ -79,10 +79,8 @@ void Application::processInput()
 		if (event.type == sf::Event::Closed)
 			m_window.close();
 
-        if (event.type == sf::Event::KeyPressed)
-        {
-        }
-	}
+        m_container.handleEvent(event, m_simulator.isRunning());
+    }
 }
 
 void Application::update(sf::Time dt)
@@ -95,6 +93,7 @@ void Application::render()
 	m_window.clear();
 
 	m_levelLoader.render(m_window);
+    m_simulator.render(m_window);
 	m_window.draw(m_container);
 
 	m_window.display();

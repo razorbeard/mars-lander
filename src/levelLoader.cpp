@@ -7,7 +7,7 @@
 
 LevelLoader::LevelLoader() :
     m_levelData(),
-    m_groundLines(),
+    m_groundLines(sf::LineStrip),
     m_surfacePoints()
 {
 
@@ -60,6 +60,11 @@ void LevelLoader::render(sf::RenderWindow& window)
 const Polyline& LevelLoader::surfacePoints() noexcept
 {
     return m_surfacePoints;
+}
+
+const LevelData& LevelLoader::levelData() noexcept
+{
+    return m_levelData;
 }
 
 const std::vector<std::string> LevelLoader::splitText(const std::string& text)

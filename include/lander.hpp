@@ -12,6 +12,7 @@ class Lander
 {
 public:
     Lander(const Point2d& position, const Point2d& velocity, int fuel, int angle, int thrust);
+    Lander();
     virtual ~Lander();
 
     void update(int angle, int thrust, sf::VertexArray& vertices);
