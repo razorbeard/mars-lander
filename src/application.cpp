@@ -63,6 +63,7 @@ void Application::createButtons()
 		auto callback = [this, id] ()
 		{
             m_levelLoader.load("resources/data/level_0" + std::to_string(id) + ".txt");
+            m_simulator.clearTrajectories();
 		};
 
 		button->setSize(sf::Vector2f(70, 30));
@@ -85,7 +86,16 @@ void Application::processInput()
 
 void Application::update(sf::Time dt)
 {
-	m_container.update(dt);
+	m_simulationUpdateTime += dt;
+
+    if (m_simulator.isRunning() && m_simulationUpdateTime > sf::seconds(1.0f))
+    {
+        m_simulator.clearTrajectories();
+        m_simulator.iteration();
+        m_simulationUpdateTime -= sf::seconds(1.0f);
+    }
+	
+    m_container.update(dt);
 }
 
 void Application::render()

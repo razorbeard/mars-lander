@@ -6,6 +6,7 @@
 #include "lander.hpp"
 
 #include <SFML/Graphics/VertexArray.hpp>
+#include <optional>
 
 namespace sf { class RenderWindow; }
 
@@ -19,13 +20,14 @@ public:
     void iteration();
     void render(sf::RenderWindow& window);
     bool isRunning();
+    void clearTrajectories();
 
 private:
     std::vector<Phenotype> generateInitialPopulation(int startAngle, int startThrust);
     Phenotype chooseParent(const std::vector<Phenotype>& population);
     Phenotype arithmeticCrossover(const Phenotype& parent1, const Phenotype& parent2);
     void mutation(Phenotype& phenotype);
-    bool hasCrossedSurface(const Polyline& line) const;
+    std::optional<Point2d> hasCrossedSurface(const Polyline& line) const;
 
 private:
 	std::vector<Phenotype> m_population;

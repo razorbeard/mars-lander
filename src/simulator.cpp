@@ -38,29 +38,41 @@ void Simulator::run(const Point2d& position, const Point2d& velocity, int fuel, 
     std::size_t index = std::distance(surfacePoints.begin(), iter);
     m_landingLine.push_back(surfacePoints[index]);
     m_landingLine.push_back(surfacePoints[index + 1]);
-
-    // CONTINUE
 }
 
 void Simulator::iteration()
 {
-    m_trajectories.clear();
     std::vector<Phenotype> newPopulation;
 
     for (Phenotype& phenotype : m_population)
     {
-        sf::VertexArray vertices(sf::LineStrip);
         Lander lander = m_lander;
+        sf::VertexArray vertices(sf::LineStrip);
+        vertices.append(sf::Vertex(sf::Vector2f(lander.position().x, lander.position().y)));
 
-        for (std::size_t i = 0; i < phenotype.size() && !hasCrossedSurface(lander.trajectoryLine()); ++i)
+        for (std::size_t i = 0; i < phenotype.size(); ++i)
         {
-            lander.update(phenotype.gene(i).angle, phenotype.gene(i).thrust, vertices);
+            lander.update(phenotype.gene(i).angle, phenotype.gene(i).thrust);
+
+            if (auto intersection = hasCrossedSurface(lander.trajectoryLine()); intersection)
+            {
+                vertices.append(sf::Vertex(sf::Vector2f(intersection.value().x, intersection.value().y)));
+                break;
+            }
+            else
+            {
+                vertices.append(sf::Vertex(sf::Vector2f(lander.position().x, lander.position().y)));
+            }
         }
 
         phenotype.computeScore(lander, m_landingLine);
         m_trajectories.push_back(vertices);
 
-        if (lander.hasSafelyLanded()) std::cerr << "SOLUTION FOUND \n";
+        if (lander.hasSafelyLanded())
+        {
+            std::cerr << "SOLUTION FOUND \n";
+            m_isRunning = false;
+        }
     }
 
     std::sort(m_population.begin(), m_population.end(), 
@@ -123,7 +135,6 @@ Phenotype Simulator::arithmeticCrossover(const Phenotype& parent1, const Phenoty
     Phenotype child = parent1;
     const int leftIdx = utils::uniform(0, parent1.size() - 1);
     const int rightIdx = utils::uniform(leftIdx, parent1.size() - 1);
-    assert(leftIdx != rightIdx);
 
     const double alpha = utils::uniform(0., 1.);
     for (std::size_t i = leftIdx; i < rightIdx; ++i)
@@ -150,18 +161,20 @@ void Simulator::mutation(Phenotype& phenotype)
     }
 }
 
-bool Simulator::hasCrossedSurface(const Polyline& line) const
+std::optional<Point2d> Simulator::hasCrossedSurface(const Polyline& line) const
 {
     assert(2 == line.size());
+    std::optional<Point2d> result = std::nullopt;
+
     for (std::size_t i = 0; i < m_surfacePoints.size() - 1; ++i)
     {
         if (utils::doIntersect(m_surfacePoints[i], m_surfacePoints[i + 1], line[0], line[1]))
         {
-            return true;
+            result = utils::lineLineIntersection(line[0], line[1], m_surfacePoints[i], m_surfacePoints[i + 1]);
         }
     }
 
-    return false;
+    return result;
 }
 
 void Simulator::render(sf::RenderWindow& window)
@@ -175,4 +188,9 @@ void Simulator::render(sf::RenderWindow& window)
 bool Simulator::isRunning()
 {
 	return m_isRunning;
+}
+
+void Simulator::clearTrajectories()
+{
+    m_trajectories.clear();
 }

@@ -35,6 +35,7 @@ namespace utils
     bool onSegment(Point2d p, Point2d q, Point2d r);
     int orientation(Point2d p, Point2d q, Point2d r);
     bool doIntersect(Point2d p1, Point2d q1, Point2d p2, Point2d q2);
+    Point2d lineLineIntersection(Point2d p1, Point2d p2, Point2d p3, Point2d p4);
 }
 
 #endif

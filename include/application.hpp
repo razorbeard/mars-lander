@@ -25,13 +25,14 @@ private:
 
 private:
     static const sf::Time s_timePerFrame;
-
+    
     sf::RenderWindow m_window;
     TextureHolder m_textures;
     FontHolder m_fonts;
     Container m_container;
     LevelLoader m_levelLoader;
     Simulator m_simulator;
+    sf::Time m_simulationUpdateTime;
 };
 
 #endif

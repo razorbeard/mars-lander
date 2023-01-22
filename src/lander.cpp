@@ -1,8 +1,6 @@
 #include "lander.hpp"
 #include "utils.hpp"
 
-#include <SFML/Graphics/VertexArray.hpp>
-
 #include <math.h>
 #include <algorithm>
 
@@ -31,9 +29,8 @@ Lander::~Lander()
 
 }
 
-void Lander::update(int angle, int thrust, sf::VertexArray& vertices)
+void Lander::update(int angle, int thrust)
 {
-    vertices.append(sf::Vertex(sf::Vector2f(m_previousPosition.x, m_previousPosition.y)));
 	m_previousPosition = m_position;
 
     int clampedAngle = std::clamp(m_angle + angle, m_angle - 15, m_angle + 15);

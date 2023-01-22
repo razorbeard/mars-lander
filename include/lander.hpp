@@ -6,8 +6,6 @@
 #include <vector>
 #include <string>
 
-namespace sf { class VertexArray; }
-
 class Lander
 {
 public:
@@ -15,7 +13,7 @@ public:
     Lander();
     virtual ~Lander();
 
-    void update(int angle, int thrust, sf::VertexArray& vertices);
+    void update(int angle, int thrust);
     const Polyline trajectoryLine() const;
     bool hasSafelyLanded() const noexcept;
     const Point2d& position() const noexcept;

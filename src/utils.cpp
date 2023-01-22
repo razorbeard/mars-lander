@@ -102,4 +102,15 @@ namespace utils
 
         return false;  // Doesn't fall in any of the above cases
     }
+
+    Point2d lineLineIntersection(Point2d p1, Point2d p2, Point2d p3, Point2d p4)
+    {
+        const double nomX = (p1.x * p2.y - p1.y * p2.x) * (p3.x - p4.x) - (p1.x - p2.x) * (p3.x * p4.y - p3.y * p4.x);
+        const double denX = (p1.x - p2.x) * (p3.y - p4.y) - (p1.y - p2.y) * (p3.x - p4.x);
+
+        const double nomY = (p1.x * p2.y - p1.y * p2.x) * (p3.y - p4.y) - (p1.y - p2.y) * (p3.x * p4.y - p3.y * p4.x);
+        const double denY = (p1.x - p2.x) * (p3.y - p4.y) - (p1.y - p2.y) * (p3.x - p4.x);
+
+        return {nomX / denX, nomY / denY};
+    }
 }

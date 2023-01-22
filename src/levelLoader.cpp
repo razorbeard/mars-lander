@@ -46,7 +46,7 @@ void LevelLoader::load(const std::string& levelName)
         values = splitText(buffer);
 
         sf::Vector2f p(std::stof(values[0]), std::stof(values[1]));
-        sf::Vertex v({p.x, p.y});
+        sf::Vertex v({p.x, p.y}, sf::Color::Red);
         m_groundLines.append(v);
 		m_surfacePoints.push_back({p.x, p.y});
     } 
