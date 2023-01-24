@@ -33,9 +33,9 @@ void Phenotype::computeScore(const Lander& lander, const Polyline& landingLine)
     const Polyline trajectoryLine = lander.trajectoryLine();
     const Point2d velocity = lander.velocity();
 
-    if (!utils::doIntersect(trajectoryLine.front(), trajectoryLine.back(), landingLine.front(), landingLine.back()))
+    if (!utils::doIntersect(trajectoryLine[0], trajectoryLine[1], landingLine[0], landingLine[1]))
     {
-        const Point2d targetPoint = {(landingLine.front().x + landingLine.back().x) / 2, landingLine.front().y};
+        const Point2d targetPoint = {(landingLine[0].x + landingLine[1].x) / 2, landingLine[0].y};
         const double distanceToTarget = utils::length(lander.position(), targetPoint);
         
         const double distancePenality = distanceToTarget / 100;

@@ -14,7 +14,9 @@
 #define POPULATION_SIZE 80
 
 Simulator::Simulator()
-    : m_trajectories(sf::LineStrip), m_isRunning(false)
+    : m_trajectories(sf::LineStrip)
+    , m_landingLine(2)
+    , m_isRunning(false)
 {
 
 }
@@ -36,8 +38,8 @@ void Simulator::run(const Point2d& position, const Point2d& velocity, int fuel, 
     assert(iter != surfacePoints.end());
 
     std::size_t index = std::distance(surfacePoints.begin(), iter);
-    m_landingLine.push_back(surfacePoints[index]);
-    m_landingLine.push_back(surfacePoints[index + 1]);
+    m_landingLine[0] = surfacePoints[index];
+    m_landingLine[1] = surfacePoints[index + 1];
 }
 
 void Simulator::iteration()
@@ -171,6 +173,7 @@ std::optional<Point2d> Simulator::hasCrossedSurface(const Polyline& line) const
         if (utils::doIntersect(m_surfacePoints[i], m_surfacePoints[i + 1], line[0], line[1]))
         {
             result = utils::lineLineIntersection(line[0], line[1], m_surfacePoints[i], m_surfacePoints[i + 1]);
+            break;
         }
     }
 
