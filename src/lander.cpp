@@ -1,6 +1,8 @@
 #include "lander.hpp"
 #include "utils.hpp"
 
+#include <SFML/Graphics/RenderTarget.hpp>
+
 #include <math.h>
 #include <algorithm>
 
@@ -10,13 +12,19 @@ namespace
 }
 
 Lander::Lander(const Point2d& position, const Point2d& velocity, int fuel, int angle, int thrust)
-    : m_position{position}
+    : m_shape{3}
+    , m_position{position}
     , m_previousPosition{position}
     , m_velocity{velocity}
     , m_acceleration{thrust * std::sin(-utils::toRadian(angle)),
                      thrust * std::cos(-utils::toRadian(angle)) + gravity}
 {
-
+    m_shape.setPoint(0, sf::Vector2f(0, 0));
+    m_shape.setPoint(1, sf::Vector2f(50, 100));
+    m_shape.setPoint(2, sf::Vector2f(100, 0));
+    m_shape.setFillColor(sf::Color::Green);
+    utils::centerOrigin(m_shape);
+    this->setPosition(position.x, position.y);
 }
 
 Lander::Lander()
@@ -29,7 +37,15 @@ Lander::~Lander()
 
 }
 
-void Lander::update(int angle, int thrust)
+void Lander::draw(sf::RenderTarget& target, sf::RenderStates states) const
+{
+	sf::Transform transform = states.transform;
+	transform *= getTransform();
+
+	target.draw(m_shape, utils::scaledScreenTransform() * transform);
+}
+
+void Lander::simulationStep(int angle, int thrust)
 {
 	m_previousPosition = m_position;
 

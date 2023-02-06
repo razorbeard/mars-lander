@@ -6,6 +6,8 @@
 #include "lander.hpp"
 
 #include <SFML/Graphics/VertexArray.hpp>
+#include <SFML/System/Time.hpp>
+
 #include <optional>
 
 namespace sf { class RenderWindow; }
@@ -13,16 +15,25 @@ namespace sf { class RenderWindow; }
 class Simulator
 {
 public:
+    enum class Status
+    {
+        IDLE,
+        RUNNING,
+        FINISHED
+    };
+
+public:
     Simulator();
     virtual ~Simulator();
 
     void run(const Point2d& position, const Point2d& velocity, int fuel, int angle, int thrust, const Polyline& surfacePoints);
-    void iteration();
+    void update(sf::Time dt);
     void render(sf::RenderWindow& window);
-    bool isRunning();
     void clearTrajectories();
+    Status status() const noexcept;
 
 private:
+    void geneticIteration();
     std::vector<Phenotype> generateInitialPopulation(int startAngle, int startThrust);
     Phenotype chooseParent(const std::vector<Phenotype>& population);
     Phenotype arithmeticCrossover(const Phenotype& parent1, const Phenotype& parent2);
@@ -33,9 +44,11 @@ private:
 	std::vector<Phenotype> m_population;
     std::vector<sf::VertexArray> m_trajectories;
 	Lander m_lander;
+    Polyline m_solution;
     Polyline m_surfacePoints;
     Polyline m_landingLine;
-    bool m_isRunning;
+    sf::Time m_updateTime;
+    Status m_status;
 };
 
 #endif

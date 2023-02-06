@@ -32,7 +32,6 @@ private:
     Container m_container;
     LevelLoader m_levelLoader;
     Simulator m_simulator;
-    sf::Time m_simulationUpdateTime;
 };
 
 #endif

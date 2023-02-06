@@ -80,21 +80,14 @@ void Application::processInput()
 		if (event.type == sf::Event::Closed)
 			m_window.close();
 
-        m_container.handleEvent(event, m_simulator.isRunning());
+        bool isSimulationRunning = m_simulator.status() == Simulator::Status::RUNNING;
+        m_container.handleEvent(event, isSimulationRunning);
     }
 }
 
 void Application::update(sf::Time dt)
 {
-	m_simulationUpdateTime += dt;
-
-    if (m_simulator.isRunning() && m_simulationUpdateTime > sf::seconds(1.0f))
-    {
-        m_simulator.clearTrajectories();
-        m_simulator.iteration();
-        m_simulationUpdateTime -= sf::seconds(1.0f);
-    }
-	
+    m_simulator.update(dt);	
     m_container.update(dt);
 }
 

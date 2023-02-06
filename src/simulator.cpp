@@ -16,7 +16,7 @@
 Simulator::Simulator()
     : m_trajectories(sf::LineStrip)
     , m_landingLine(2)
-    , m_isRunning(false)
+    , m_status(Status::IDLE)
 {
 
 }
@@ -29,8 +29,10 @@ Simulator::~Simulator()
 void Simulator::run(const Point2d& position, const Point2d& velocity, int fuel, int angle, int thrust, const Polyline& surfacePoints)
 {
     m_lander = Lander(position, velocity, fuel, angle, thrust);
-	m_population = generateInitialPopulation(angle, thrust);	
-    m_isRunning = true;
+	m_population = generateInitialPopulation(angle, thrust);
+    m_updateTime = sf::seconds(1.0f);
+    m_status = Status::RUNNING;
+    m_solution.clear();
 
     m_surfacePoints = surfacePoints;
     auto hasSameYCoordinate = [] (const Point2d& p, const Point2d& q) { return p.y == q.y; };
@@ -42,7 +44,7 @@ void Simulator::run(const Point2d& position, const Point2d& velocity, int fuel, 
     m_landingLine[1] = surfacePoints[index + 1];
 }
 
-void Simulator::iteration()
+void Simulator::geneticIteration()
 {
     std::vector<Phenotype> newPopulation;
 
@@ -54,11 +56,29 @@ void Simulator::iteration()
 
         for (std::size_t i = 0; i < phenotype.size(); ++i)
         {
-            lander.update(phenotype.gene(i).angle, phenotype.gene(i).thrust);
+            lander.simulationStep(phenotype.gene(i).angle, phenotype.gene(i).thrust);
 
             if (auto intersection = hasCrossedSurface(lander.trajectoryLine()); intersection)
             {
                 vertices.append(sf::Vertex(sf::Vector2f(intersection.value().x, intersection.value().y)));
+
+                if (intersection.value().x >= m_landingLine[0].x &&
+                    intersection.value().x <= m_landingLine[1].x &&
+                    lander.hasSafelyLanded())
+                {
+                    clearTrajectories();
+
+                    for (std::size_t vP = 0; vP < vertices.getVertexCount(); ++vP)
+                    {
+                        m_solution.push_back({vertices[vP].position.x, vertices[vP].position.y});
+                        vertices[vP].color = sf::Color::Green;
+                    }
+                    std::reverse(m_solution.begin(), m_solution.end());
+                    m_trajectories.push_back(vertices);
+                    m_updateTime = sf::Time::Zero;
+                    m_status = Status::FINISHED;
+                    return;
+                }
                 break;
             }
             else
@@ -67,14 +87,8 @@ void Simulator::iteration()
             }
         }
 
-        phenotype.computeScore(lander, m_landingLine);
         m_trajectories.push_back(vertices);
-
-        if (lander.hasSafelyLanded())
-        {
-            std::cerr << "SOLUTION FOUND \n";
-            m_isRunning = false;
-        }
+        phenotype.computeScore(lander, m_landingLine);
     }
 
     std::sort(m_population.begin(), m_population.end(), 
@@ -180,17 +194,50 @@ std::optional<Point2d> Simulator::hasCrossedSurface(const Polyline& line) const
     return result;
 }
 
+void Simulator::update(sf::Time dt)
+{
+	m_updateTime += dt;
+    
+    if (m_status == Status::RUNNING && m_updateTime > sf::seconds(1.0f))
+    {
+        m_updateTime -= sf::seconds(1.0f);
+        clearTrajectories();
+        geneticIteration();
+    }
+    else if (m_status == Status::FINISHED)
+    {
+        if (m_solution.size() > 1)
+        {
+            const std::size_t n = m_solution.size();
+            const Point2d newPosition = utils::lerp(m_solution[n], m_solution[n-1], m_updateTime.asSeconds() * 10);
+            m_lander.setPosition(newPosition.x, newPosition.y);
+
+            if (m_updateTime > sf::seconds(0.1f))
+            {
+                m_solution.pop_back();
+                m_updateTime -= sf::seconds(0.1f);
+            }
+        }
+        else
+        {
+            m_status = Status::IDLE;
+        }
+    }
+}
+
 void Simulator::render(sf::RenderWindow& window)
 {
     for (const auto& trajectory : m_trajectories)
     {
         window.draw(trajectory, utils::scaledScreenTransform());
     }
+
+    window.draw(m_lander);
 }
 
-bool Simulator::isRunning()
+Simulator::Status Simulator::status() const noexcept
 {
-	return m_isRunning;
+	return m_status;
 }
 
 void Simulator::clearTrajectories()

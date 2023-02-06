@@ -1,6 +1,9 @@
 #include "utils.hpp"
 
 #include <SFML/Graphics/Text.hpp>
+#include <SFML/Graphics/Shape.hpp>
+
+#include <iostream>
 
 namespace utils
 {
@@ -34,6 +37,13 @@ namespace utils
                                     std::floor(bounds.top + bounds.height / 2.0f)));
     }
 
+    void centerOrigin(sf::Shape& shape)
+    {
+        sf::FloatRect bounds = shape.getLocalBounds();
+        shape.setOrigin(sf::Vector2f(std::floor(bounds.left + bounds.width / 2.0f),
+                                     std::floor(bounds.top + bounds.height / 2.0f)));
+    }
+
     double toRadian(double degree)
     {
         return 3.14159265358979323846f / 180.0f * degree;
@@ -48,7 +58,17 @@ namespace utils
     {
         return std::sqrt(a.x * a.x + a.y * a.y);
     }
+    
+    Point2d lerp(Point2d u, Point2d v, double t)
+    {
+        Point2d result;
 
+        result.x = u.x + t * (v.x - u.x);
+        result.y = u.y + t * (v.y - u.y);
+
+        return result;
+    }
+    
     bool onSegment(Point2d p, Point2d q, Point2d r)
     {
         if (q.x <= std::max(p.x, r.x) &&
