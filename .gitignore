@@ -1,0 +1,12 @@
+# Build Folder
+build*/
+
+# Vim temporary files
+.*.swp
+
+# Make tool related files
+**.make
+Makefile
+
+# IDE
+.vscode/

@@ -10,12 +10,14 @@
 #include <cassert>
 #include <iostream>
 
-
 #define POPULATION_SIZE 80
+#define GENE_LENGTH 160
+#define DELTA_UPDATE_TIME sf::seconds(0.06f)
 
 Simulator::Simulator()
     : m_trajectories(sf::LineStrip)
     , m_landingLine(2)
+    , m_numberOfIterations(0)
     , m_status(Status::IDLE)
 {
 
@@ -28,11 +30,11 @@ Simulator::~Simulator()
 
 void Simulator::run(const Point2d& position, const Point2d& velocity, int fuel, int angle, int thrust, const Polyline& surfacePoints)
 {
+    clear();
+
     m_lander = Lander(position, velocity, fuel, angle, thrust);
-	m_population = generateInitialPopulation(angle, thrust);
-    m_updateTime = sf::seconds(1.0f);
+	m_population = generateInitialPopulation(GENE_LENGTH);
     m_status = Status::RUNNING;
-    m_solution.clear();
 
     m_surfacePoints = surfacePoints;
     auto hasSameYCoordinate = [] (const Point2d& p, const Point2d& q) { return p.y == q.y; };
@@ -57,7 +59,7 @@ void Simulator::geneticIteration()
         for (std::size_t i = 0; i < phenotype.size(); ++i)
         {
             lander.simulationStep(phenotype.gene(i).angle, phenotype.gene(i).thrust);
-
+            
             if (auto intersection = hasCrossedSurface(lander.trajectoryLine()); intersection)
             {
                 vertices.append(sf::Vertex(sf::Vector2f(intersection.value().x, intersection.value().y)));
@@ -66,12 +68,12 @@ void Simulator::geneticIteration()
                     intersection.value().x <= m_landingLine[1].x &&
                     lander.hasSafelyLanded())
                 {
-                    clearTrajectories();
+                    m_trajectories.clear();
 
                     for (std::size_t vP = 0; vP < vertices.getVertexCount(); ++vP)
                     {
                         m_solution.push_back({vertices[vP].position.x, vertices[vP].position.y});
-                        vertices[vP].color = sf::Color::Green;
+                        vertices[vP].color = sf::Color(0, 255, 0, 100);
                     }
                     std::reverse(m_solution.begin(), m_solution.end());
                     m_trajectories.push_back(vertices);
@@ -117,14 +119,14 @@ void Simulator::geneticIteration()
     m_population = newPopulation;
 }
 
-std::vector<Phenotype> Simulator::generateInitialPopulation(int startAngle, int startThrust)
+std::vector<Phenotype> Simulator::generateInitialPopulation(std::size_t geneLength)
 {
     std::vector<Phenotype> population;
     population.reserve(POPULATION_SIZE);
 
     for (std::size_t i = 0; i < POPULATION_SIZE; ++i)
     {
-        population.emplace_back(startAngle, startThrust);
+        population.emplace_back(geneLength);
     }
 
     return population;
@@ -164,7 +166,7 @@ Phenotype Simulator::arithmeticCrossover(const Phenotype& parent1, const Phenoty
 
 void Simulator::mutation(Phenotype& phenotype)
 {
-    const double mutationProbability = 0.05;
+    const double mutationProbability = 0.03;
 
     for (std::size_t i = 0; i < phenotype.size(); ++i)
     {
@@ -172,7 +174,7 @@ void Simulator::mutation(Phenotype& phenotype)
         if (probability < mutationProbability)
         {
             phenotype.gene(i).angle = utils::uniform(-90, 90);
-            phenotype.gene(i).thrust = utils::uniform(0, 4);
+            phenotype.gene(i).thrust = utils::uniform(-1, 1);
         }
     }
 }
@@ -198,18 +200,19 @@ void Simulator::update(sf::Time dt)
 {
 	m_updateTime += dt;
     
-    if (m_status == Status::RUNNING && m_updateTime > sf::seconds(1.0f))
+    if (m_status == Status::RUNNING && m_updateTime > DELTA_UPDATE_TIME)
     {
-        m_updateTime -= sf::seconds(1.0f);
-        clearTrajectories();
+        m_updateTime -= DELTA_UPDATE_TIME;
+        m_trajectories.clear();
         geneticIteration();
+        m_numberOfIterations++;
     }
     else if (m_status == Status::FINISHED)
     {
         if (m_solution.size() > 1)
         {
             const std::size_t n = m_solution.size();
-            const Point2d newPosition = utils::lerp(m_solution[n], m_solution[n-1], m_updateTime.asSeconds() * 10);
+            const Point2d newPosition = utils::lerp(m_solution[n-1], m_solution[n-2], m_updateTime.asSeconds() * 10);
             m_lander.setPosition(newPosition.x, newPosition.y);
 
             if (m_updateTime > sf::seconds(0.1f))
@@ -237,10 +240,20 @@ void Simulator::render(sf::RenderWindow& window)
 
 Simulator::Status Simulator::status() const noexcept
 {
-	return m_status;
+    return m_status;
 }
 
-void Simulator::clearTrajectories()
+void Simulator::clear()
 {
     m_trajectories.clear();
+    m_updateTime = DELTA_UPDATE_TIME;
+    m_numberOfIterations = 0;
+    m_solution.clear();
+
+    m_lander.setPosition(-50.f, -50.f); // hide the lander
+}
+
+const std::size_t Simulator::numberOfIterations() const noexcept
+{
+    return m_numberOfIterations;
 }

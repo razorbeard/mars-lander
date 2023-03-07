@@ -29,25 +29,27 @@ public:
     void run(const Point2d& position, const Point2d& velocity, int fuel, int angle, int thrust, const Polyline& surfacePoints);
     void update(sf::Time dt);
     void render(sf::RenderWindow& window);
-    void clearTrajectories();
+    void clear();
+    const std::size_t numberOfIterations() const noexcept;
     Status status() const noexcept;
 
 private:
     void geneticIteration();
-    std::vector<Phenotype> generateInitialPopulation(int startAngle, int startThrust);
+    std::vector<Phenotype> generateInitialPopulation(std::size_t geneLength);
     Phenotype chooseParent(const std::vector<Phenotype>& population);
     Phenotype arithmeticCrossover(const Phenotype& parent1, const Phenotype& parent2);
     void mutation(Phenotype& phenotype);
     std::optional<Point2d> hasCrossedSurface(const Polyline& line) const;
 
 private:
-	std::vector<Phenotype> m_population;
+    std::vector<Phenotype> m_population;
     std::vector<sf::VertexArray> m_trajectories;
-	Lander m_lander;
+    Lander m_lander;
     Polyline m_solution;
     Polyline m_surfacePoints;
     Polyline m_landingLine;
     sf::Time m_updateTime;
+    std::size_t m_numberOfIterations;
     Status m_status;
 };
 

@@ -5,19 +5,16 @@
 #include <algorithm>
 #include <cassert>
 
-Phenotype::Phenotype(int startAngle, int startThrust, std::size_t geneSize) :
+Phenotype::Phenotype(std::size_t geneLength) :
     m_score{0.0}
 {
-    m_genes.reserve(geneSize);
-    int clampedAngle = startAngle;
+    m_genes.reserve(geneLength);
 
-    for (std::size_t i = 0; i < geneSize; ++i)
+    for (std::size_t i = 0; i < geneLength; ++i)
     {
-        const int randomAngle = std::clamp(utils::uniform(clampedAngle - 15, clampedAngle + 15), -90, 90);
-        const int randomThrust = utils::uniform(0, 4);
+        const int randomAngle = utils::uniform(-15, 15);
+        const int randomThrust = utils::uniform(-1, 1);
         m_genes.push_back({randomAngle, randomThrust});
-
-        clampedAngle = randomAngle;
     }
 }
 
@@ -28,19 +25,19 @@ Phenotype::~Phenotype()
 
 void Phenotype::computeScore(const Lander& lander, const Polyline& landingLine)
 {
-	assert(2 == landingLine.size());
+    assert(2 == landingLine.size());
 
     const Polyline trajectoryLine = lander.trajectoryLine();
     const Point2d velocity = lander.velocity();
 
     if (!utils::doIntersect(trajectoryLine[0], trajectoryLine[1], landingLine[0], landingLine[1]))
     {
-        const Point2d targetPoint = {(landingLine[0].x + landingLine[1].x) / 2, landingLine[0].y};
+        const Point2d targetPoint = { (landingLine[0].x + landingLine[1].x) / 2, landingLine[0].y };
         const double distanceToTarget = utils::length(lander.position(), targetPoint);
-        
+
         const double distancePenality = distanceToTarget / 100;
         const double velocityPenality = utils::length(velocity) / 175;
-        
+
         m_score = 100.0 - distancePenality - velocityPenality;
     }
     else if (20 < std::abs(velocity.x) || 40 < std::abs(velocity.y))

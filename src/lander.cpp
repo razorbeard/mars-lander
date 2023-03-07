@@ -16,8 +16,11 @@ Lander::Lander(const Point2d& position, const Point2d& velocity, int fuel, int a
     , m_position{position}
     , m_previousPosition{position}
     , m_velocity{velocity}
-    , m_acceleration{thrust * std::sin(-utils::toRadian(angle)),
-                     thrust * std::cos(-utils::toRadian(angle)) + gravity}
+    , m_acceleration{thrust * std::sin(utils::toRadian(-angle)),
+                     thrust * std::cos(utils::toRadian(-angle)) + gravity}
+    , m_fuel{fuel}
+    , m_angle{angle}
+    , m_thrust{thrust}
 {
     m_shape.setPoint(0, sf::Vector2f(0, 0));
     m_shape.setPoint(1, sf::Vector2f(50, 100));
@@ -28,6 +31,9 @@ Lander::Lander(const Point2d& position, const Point2d& velocity, int fuel, int a
 }
 
 Lander::Lander()
+    : m_fuel{0}
+    , m_angle{0}
+    , m_thrust{0}
 {
 
 }
@@ -39,31 +45,31 @@ Lander::~Lander()
 
 void Lander::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
-	sf::Transform transform = states.transform;
-	transform *= getTransform();
+    sf::Transform transform = states.transform;
+    transform *= getTransform();
 
-	target.draw(m_shape, utils::scaledScreenTransform() * transform);
+    target.draw(m_shape, utils::scaledScreenTransform() * transform);
 }
 
 void Lander::simulationStep(int angle, int thrust)
 {
-	m_previousPosition = m_position;
+    m_previousPosition = m_position;
 
     int clampedAngle = std::clamp(m_angle + angle, m_angle - 15, m_angle + 15);
     int clampedThrust = std::clamp(m_thrust + thrust, m_thrust - 1, m_thrust + 1);
 
-	m_angle = std::clamp(clampedAngle, -90, 90);
-	m_thrust = std::clamp(clampedThrust, 0, 4);
-	m_fuel -= thrust;
+    m_angle = std::clamp(clampedAngle, -90, 90);
+    m_thrust = std::clamp(clampedThrust, 0, 4);
+    m_fuel -= thrust;
 
-	m_acceleration.x = m_thrust * std::sin(-utils::toRadian(m_angle));
-	m_acceleration.y = m_thrust * std::cos(-utils::toRadian(m_angle)) + gravity;
-	
-    m_velocity.x = m_velocity.x + m_acceleration.x;
-	m_velocity.y = m_velocity.y + m_acceleration.y;
+    m_acceleration.x = m_thrust * std::sin(utils::toRadian(-m_angle));
+    m_acceleration.y = m_thrust * std::cos(utils::toRadian(-m_angle)) + gravity;
 
-	m_position.x += m_velocity.x - (0.5 * m_acceleration.x);
-	m_position.y += m_velocity.y - (0.5 * m_acceleration.y);
+    m_position.x += m_velocity.x + (0.5 * m_acceleration.x);
+    m_position.y += m_velocity.y + (0.5 * m_acceleration.y);
+
+    m_velocity.x += m_acceleration.x;
+    m_velocity.y += m_acceleration.y;
 }
 
 const Polyline Lander::trajectoryLine() const

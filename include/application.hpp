@@ -8,6 +8,7 @@
 #include "simulator.hpp"
 
 #include <SFML/System/Time.hpp>
+#include <SFML/Graphics/Text.hpp>
 
 class Application
 {
@@ -27,6 +28,7 @@ private:
     static const sf::Time s_timePerFrame;
     
     sf::RenderWindow m_window;
+    sf::Text m_statisticsText;
     TextureHolder m_textures;
     FontHolder m_fonts;
     Container m_container;

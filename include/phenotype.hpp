@@ -16,7 +16,7 @@ struct Gene
 class Phenotype 
 {
 public:
-    Phenotype(int startAngle, int startThrust, std::size_t geneSize = 80);
+    Phenotype(std::size_t geneLength = 160);
     virtual ~Phenotype();
 
     void computeScore(const Lander& lander, const Polyline& landingLine);

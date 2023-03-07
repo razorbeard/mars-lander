@@ -48,13 +48,13 @@ void LevelLoader::load(const std::string& levelName)
         sf::Vector2f p(std::stof(values[0]), std::stof(values[1]));
         sf::Vertex v({p.x, p.y}, sf::Color::Red);
         m_groundLines.append(v);
-		m_surfacePoints.push_back({p.x, p.y});
-    } 
+        m_surfacePoints.push_back({p.x, p.y});
+    }
 }
 
 void LevelLoader::render(sf::RenderWindow& window)
 {
-   window.draw(m_groundLines, utils::scaledScreenTransform()); 
+    window.draw(m_groundLines, utils::scaledScreenTransform());
 }
 
 const Polyline& LevelLoader::surfacePoints() noexcept

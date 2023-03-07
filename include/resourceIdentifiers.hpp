@@ -6,17 +6,18 @@
 
 namespace Textures
 {
-	enum ID
-	{
-	};
+    enum ID
+    {
+
+    };
 }
 
 namespace Fonts
 {
-	enum ID
-	{
-		Upheaval
-	};
+    enum ID
+    {
+        Upheaval
+    };
 }
 
 template <typename Resource, typename Identifier>
