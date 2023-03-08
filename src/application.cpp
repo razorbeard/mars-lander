@@ -61,7 +61,7 @@ void Application::createButtons()
 
     const std::vector<std::string> levels{"Level 1", "Level 2", "Level 3", "Level 4", "Level 5"};
 
-    for (std::size_t id = 1; id < 6; ++id)
+    for (std::size_t id = 1; id <= levels.size(); ++id)
     {
         std::shared_ptr<Button> button = std::make_shared<Button>(m_fonts, levels[id-1]);
         auto callback = [this, id] ()
