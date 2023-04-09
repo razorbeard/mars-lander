@@ -36,9 +36,9 @@ public:
 private:
     void geneticIteration();
     std::vector<Phenotype> generateInitialPopulation(std::size_t geneLength);
-    Phenotype chooseParent(const std::vector<Phenotype>& population);
+    Phenotype chooseParent();
     Phenotype arithmeticCrossover(const Phenotype& parent1, const Phenotype& parent2);
-    void mutation(Phenotype& phenotype);
+    void mutate(Phenotype& phenotype, double mutationRate = 1.);
     std::optional<Point2d> hasCrossedSurface(const Polyline& line) const;
 
 private:

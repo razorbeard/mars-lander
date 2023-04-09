@@ -10,9 +10,11 @@
 #include <cassert>
 #include <iostream>
 
-#define POPULATION_SIZE 80
+#define POPULATION_SIZE 100
 #define GENE_LENGTH 160
 #define DELTA_UPDATE_TIME sf::seconds(0.06f)
+#define CROSSOVER_RATE 0.8
+#define MUTATION_RATE 0.03
 
 Simulator::Simulator()
     : m_trajectories(sf::LineStrip)
@@ -48,8 +50,6 @@ void Simulator::run(const Point2d& position, const Point2d& velocity, int fuel, 
 
 void Simulator::geneticIteration()
 {
-    std::vector<Phenotype> newPopulation;
-
     for (Phenotype& phenotype : m_population)
     {
         Lander lander = m_lander;
@@ -93,27 +93,25 @@ void Simulator::geneticIteration()
         phenotype.computeScore(lander, m_landingLine);
     }
 
-    std::sort(m_population.begin(), m_population.end(), 
-              [](const Phenotype& lhs, const Phenotype& rhs) { return lhs.score() > rhs.score(); });
-
-    // Elistism
-    newPopulation.push_back(m_population[0]);
-    newPopulation.push_back(m_population[1]);
-
-    for (std::size_t k = 0; k < m_population.size() / 2 - 1; ++k)
+    std::vector<Phenotype> newPopulation;
+    for (std::size_t k = 0; k < m_population.size(); ++k)
     {
-        // Crossover
-        Phenotype parent1 = chooseParent(m_population);
-        Phenotype parent2 = chooseParent(m_population);
-        
-        Phenotype child1 = arithmeticCrossover(parent1, parent2);
-        Phenotype child2 = arithmeticCrossover(parent2, parent1);
-        
-        // Mutation
-        mutation(child1);
-        mutation(child2);
-        newPopulation.push_back(child1);
-        newPopulation.push_back(child2);
+        Phenotype newPhenotype;
+        const double crossoverProbability = utils::uniform(0., 1.);
+        if (crossoverProbability < CROSSOVER_RATE)
+        {
+            Phenotype parent1 = chooseParent();
+            Phenotype parent2 = chooseParent();
+            
+            newPhenotype = arithmeticCrossover(parent1, parent2);
+        }
+        else
+        {
+            newPhenotype = chooseParent();
+        }
+
+        mutate(newPhenotype, MUTATION_RATE);
+        newPopulation.push_back(newPhenotype);
     }
 
     m_population = newPopulation;
@@ -132,20 +130,20 @@ std::vector<Phenotype> Simulator::generateInitialPopulation(std::size_t geneLeng
     return population;
 }
 
-Phenotype Simulator::chooseParent(const std::vector<Phenotype>& population)
+Phenotype Simulator::chooseParent()
 {
     // Tournament selection
-    std::size_t bestIndex = utils::uniform(0, population.size() - 1);
+    std::size_t bestIndex = utils::uniform(0, m_population.size() - 1);
     for (std::size_t i = 1; i < 3; ++i)
     {
-        const std::size_t candidateIdx = utils::uniform(0, population.size() - 1);
+        const std::size_t candidateIdx = utils::uniform(0, m_population.size() - 1);
         if (m_population[candidateIdx].score() > m_population[bestIndex].score())
         {
             bestIndex = candidateIdx;
         }
     }
 
-    return m_population[bestIndex]; 
+    return m_population[bestIndex];
 }
 
 Phenotype Simulator::arithmeticCrossover(const Phenotype& parent1, const Phenotype& parent2)
@@ -155,23 +153,21 @@ Phenotype Simulator::arithmeticCrossover(const Phenotype& parent1, const Phenoty
     const int rightIdx = utils::uniform(leftIdx, parent1.size() - 1);
 
     const double alpha = utils::uniform(0., 1.);
-    for (std::size_t i = leftIdx; i < rightIdx; ++i)
+    for (std::size_t i = leftIdx; i <= rightIdx; ++i)
     {
-        child.gene(i).thrust = int(alpha * child.gene(i).thrust + (1. - alpha) * parent2.gene(i).thrust);
-        child.gene(i).angle = int(alpha * child.gene(i).angle + (1. - alpha) * parent2.gene(i).angle);
+        child.gene(i).thrust = std::round(alpha * child.gene(i).thrust + (1. - alpha) * parent2.gene(i).thrust);
+        child.gene(i).angle = std::round(alpha * child.gene(i).angle + (1. - alpha) * parent2.gene(i).angle);
     }
 
     return child;
 }
 
-void Simulator::mutation(Phenotype& phenotype)
+void Simulator::mutate(Phenotype& phenotype, double mutationRate)
 {
-    const double mutationProbability = 0.03;
-
     for (std::size_t i = 0; i < phenotype.size(); ++i)
     {
         const double probability = utils::uniform(0., 1.);
-        if (probability < mutationProbability)
+        if (probability < mutationRate)
         {
             phenotype.gene(i).angle = utils::uniform(-90, 90);
             phenotype.gene(i).thrust = utils::uniform(-1, 1);

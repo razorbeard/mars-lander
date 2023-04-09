@@ -64,12 +64,12 @@ void Lander::simulationStep(int angle, int thrust)
 
     m_acceleration.x = m_thrust * std::sin(utils::toRadian(-m_angle));
     m_acceleration.y = m_thrust * std::cos(utils::toRadian(-m_angle)) + gravity;
+    
+    m_velocity.x += m_acceleration.x;
+    m_velocity.y += m_acceleration.y;
 
     m_position.x += m_velocity.x + (0.5 * m_acceleration.x);
     m_position.y += m_velocity.y + (0.5 * m_acceleration.y);
-
-    m_velocity.x += m_acceleration.x;
-    m_velocity.y += m_acceleration.y;
 }
 
 const Polyline Lander::trajectoryLine() const
