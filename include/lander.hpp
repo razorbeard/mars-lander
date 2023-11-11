@@ -16,7 +16,7 @@ class Lander : public sf::Drawable, public sf::Transformable
 {
 public:
     Lander(const Point2d& position, const Point2d& velocity, int fuel, int angle, int thrust);
-    Lander();
+    Lander() = default;
     virtual ~Lander();
 
     virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
@@ -27,6 +27,8 @@ public:
     const Point2d& velocity() const noexcept;
 
 private:
+    static double s_gravity;
+
     sf::ConvexShape m_shape;
     Point2d m_position;
     Point2d m_previousPosition;

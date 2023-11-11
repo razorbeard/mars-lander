@@ -6,10 +6,7 @@
 #include <math.h>
 #include <algorithm>
 
-namespace 
-{
-   const double gravity = -3.771; 
-}
+double Lander::s_gravity = 3.711; 
 
 Lander::Lander(const Point2d& position, const Point2d& velocity, int fuel, int angle, int thrust)
     : m_shape{3}
@@ -17,7 +14,7 @@ Lander::Lander(const Point2d& position, const Point2d& velocity, int fuel, int a
     , m_previousPosition{position}
     , m_velocity{velocity}
     , m_acceleration{thrust * std::sin(utils::toRadian(-angle)),
-                     thrust * std::cos(utils::toRadian(-angle)) + gravity}
+                     thrust * std::cos(utils::toRadian(-angle)) - s_gravity}
     , m_fuel{fuel}
     , m_angle{angle}
     , m_thrust{thrust}
@@ -28,14 +25,6 @@ Lander::Lander(const Point2d& position, const Point2d& velocity, int fuel, int a
     m_shape.setFillColor(sf::Color::Green);
     utils::centerOrigin(m_shape);
     this->setPosition(position.x, position.y);
-}
-
-Lander::Lander()
-    : m_fuel{0}
-    , m_angle{0}
-    , m_thrust{0}
-{
-
 }
 
 Lander::~Lander()
@@ -63,7 +52,7 @@ void Lander::simulationStep(int angle, int thrust)
     m_fuel -= thrust;
 
     m_acceleration.x = m_thrust * std::sin(utils::toRadian(-m_angle));
-    m_acceleration.y = m_thrust * std::cos(utils::toRadian(-m_angle)) + gravity;
+    m_acceleration.y = m_thrust * std::cos(utils::toRadian(-m_angle)) - s_gravity;
     
     m_velocity.x += m_acceleration.x;
     m_velocity.y += m_acceleration.y;

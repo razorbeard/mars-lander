@@ -10,11 +10,11 @@
 #include <cassert>
 #include <iostream>
 
-#define POPULATION_SIZE 100
-#define GENE_LENGTH 160
-#define DELTA_UPDATE_TIME sf::seconds(0.06f)
-#define CROSSOVER_RATE 0.8
-#define MUTATION_RATE 0.03
+size_t Simulator::s_populationSize = 100;
+size_t Simulator::s_geneLength = 160;
+sf::Time Simulator::s_deltaUpdateTime = sf::seconds(0.06f);
+double Simulator::s_crossoverRate = 0.95;
+double Simulator::s_mutationRate = 0.03;
 
 Simulator::Simulator()
     : m_trajectories(sf::LineStrip)
@@ -35,7 +35,7 @@ void Simulator::run(const Point2d& position, const Point2d& velocity, int fuel, 
     clear();
 
     m_lander = Lander(position, velocity, fuel, angle, thrust);
-	m_population = generateInitialPopulation(GENE_LENGTH);
+	m_population = generateInitialPopulation(s_geneLength);
     m_status = Status::RUNNING;
 
     m_surfacePoints = surfacePoints;
@@ -98,7 +98,7 @@ void Simulator::geneticIteration()
     {
         Phenotype newPhenotype;
         const double crossoverProbability = utils::uniform(0., 1.);
-        if (crossoverProbability < CROSSOVER_RATE)
+        if (crossoverProbability < s_crossoverRate)
         {
             Phenotype parent1 = chooseParent();
             Phenotype parent2 = chooseParent();
@@ -110,7 +110,7 @@ void Simulator::geneticIteration()
             newPhenotype = chooseParent();
         }
 
-        mutate(newPhenotype, MUTATION_RATE);
+        mutate(newPhenotype);
         newPopulation.push_back(newPhenotype);
     }
 
@@ -120,9 +120,9 @@ void Simulator::geneticIteration()
 std::vector<Phenotype> Simulator::generateInitialPopulation(std::size_t geneLength)
 {
     std::vector<Phenotype> population;
-    population.reserve(POPULATION_SIZE);
+    population.reserve(s_populationSize);
 
-    for (std::size_t i = 0; i < POPULATION_SIZE; ++i)
+    for (std::size_t i = 0; i < s_populationSize; ++i)
     {
         population.emplace_back(geneLength);
     }
@@ -162,12 +162,12 @@ Phenotype Simulator::arithmeticCrossover(const Phenotype& parent1, const Phenoty
     return child;
 }
 
-void Simulator::mutate(Phenotype& phenotype, double mutationRate)
+void Simulator::mutate(Phenotype& phenotype)
 {
     for (std::size_t i = 0; i < phenotype.size(); ++i)
     {
         const double probability = utils::uniform(0., 1.);
-        if (probability < mutationRate)
+        if (probability < s_mutationRate)
         {
             phenotype.gene(i).angle = utils::uniform(-90, 90);
             phenotype.gene(i).thrust = utils::uniform(-1, 1);
@@ -196,9 +196,9 @@ void Simulator::update(sf::Time dt)
 {
 	m_updateTime += dt;
     
-    if (m_status == Status::RUNNING && m_updateTime > DELTA_UPDATE_TIME)
+    if (m_status == Status::RUNNING && m_updateTime > s_deltaUpdateTime)
     {
-        m_updateTime -= DELTA_UPDATE_TIME;
+        m_updateTime -= s_deltaUpdateTime;
         m_trajectories.clear();
         geneticIteration();
         m_numberOfIterations++;
@@ -242,7 +242,7 @@ Simulator::Status Simulator::status() const noexcept
 void Simulator::clear()
 {
     m_trajectories.clear();
-    m_updateTime = DELTA_UPDATE_TIME;
+    m_updateTime = s_deltaUpdateTime;
     m_numberOfIterations = 0;
     m_solution.clear();
 

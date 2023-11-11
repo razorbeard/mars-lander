@@ -46,7 +46,7 @@ namespace utils
 
     double toRadian(double degree)
     {
-        return 3.14159265358979323846f / 180.0f * degree;
+        return 3.14159265358979323846 / 180.0 * degree;
     }
 
     double length(const Point2d& a, const Point2d& b)
